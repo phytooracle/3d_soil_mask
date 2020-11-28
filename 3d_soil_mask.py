@@ -7,8 +7,11 @@ Purpose: Segment out soil from pointclouds.
 
 import argparse
 import os
+import os.path
 import sys
-
+import numpy as np
+import open3d as o3d
+import statistics as stats
 
 # --------------------------------------------------
 def get_args():
