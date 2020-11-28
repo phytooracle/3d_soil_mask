@@ -1,2 +1,17 @@
-# 3d_soil_mask
-Point cloud ground detection and removal.
+# 3D Soil Mask
+
+## Inputs
+
+## Outputs
+
+## Arguments and Flags
+* **Positional Arguments:** 
+
+* **Required Arguments:**
+        
+* **Optional Arguments:**
+
+       
+## Adapting the Script
+                                        
+### Example
