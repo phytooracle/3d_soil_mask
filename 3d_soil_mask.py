@@ -7,23 +7,24 @@ Purpose: Segment out soil from pointclouds.
 
 import argparse
 import os
-import os.path
-import sys
 import numpy as np
 import open3d as o3d
+import os.path
 import statistics as stats
+
 
 # --------------------------------------------------
 def get_args():
     """Get command-line arguments"""
 
     parser = argparse.ArgumentParser(
-        description = '3d soil masking'
+        description = '3d soil masking',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     # Positional Args
-    parser.add_argument('Path to Full pass PLY file',
+    parser.add_argument('full_pass_ply',
                         metavar='full_pass_ply',
+                        type = str,
                         help='path to a ply file of a full 3d scanner pass')
 
     # Optional Args
@@ -42,32 +43,32 @@ def get_args():
                         default='plants_no_soil')
     
     parser.add_argument('-sl',
-                        '--Slice size',
+                        '--slice_size',
                         help='Slice size to take when doing clustering',
                         metavar='slice_size',
                         type=float,
-                        default= .02)
+                        default= 0.02)
 
     parser.add_argument('-eps',
-                        '--Estimated Clustering Disance',
+                        '--eps_num',
                         help='Estimated distance between points, smaller number makes it more restrictive',
                         metavar='eps_num',
                         type=int,
                         default= 6)
 
     parser.add_argument('-min_points',
-                        '--Minimum points to make a cluster',
+                        '--min_points',
                         help='Minimum points to make a cluster',
                         metavar='min_points',
                         type=int,
                         default= 200)
 
     parser.add_argument('-cutoff_percent',
-                        '--Percent soil to show',
+                        '--cutoff',
                         help='Controlls the percentage of the top of the soil and above that is shown',
                         metavar='cutoff',
                         type=float,
-                        default= .97)
+                        default= 0.97)
 
     return parser.parse_args()
 
@@ -89,7 +90,6 @@ def main():
 
     # Read .ply file
     pcd_whole = o3d.io.read_point_cloud(plant)
-
     # Convert open3d format to numpy array
     # Here, you have the point cloud in numpy format. 
     ar_whole_field = np.asarray(pcd_whole.points)
@@ -99,12 +99,12 @@ def main():
     min_1 = min(ar_whole_field[:,1])
 
     length = [max_1,min_1]
-    yrange = (abs(max_1)-abs(min_1))*args.slice_size
+    yrange = (abs(max_1)-abs(min_1))*(args.slice_size)
     middle = stats.median(length)
     bound_1 = middle + yrange
     bound_2 = middle - yrange
 
-    print(f'max = {max_1}\nmin = {min_1}\nMiddle = {middle}\nYrange = {yrange}')
+    print(f'Max Y Value of Full PCD = {max_1}\nMin Y Value of Full PCD = {min_1}\nMiddle Y Value of Full PCD = {middle}')
     slice_of_whole = []
 
     for index, row in enumerate(ar_whole_field):
@@ -130,9 +130,7 @@ def main():
     # Sending the slice to be clustered
 
     # Clustering
-    with o3d.utility.VerbosityContextManager(
-            o3d.utility.VerbosityLevel.Debug) as cm:
-        labels = np.array(pcd_slice.cluster_dbscan(eps=args.eps_num, min_points=args.min_points, print_progress=True))
+    labels = np.array(pcd_slice.cluster_dbscan(eps=args.eps_num, min_points=args.min_points, print_progress=True))
 
     max_label = labels.max()
     print(f"point cloud has {max_label + 1} clusters")
@@ -163,14 +161,14 @@ def main():
     #-----------------------------------------------------
     # Cropping out the plants
     plant = []
-    for i in ar_whole:
+    for i in ar_whole_field:
         if (min_0 < i[0] < max_0) and (i[2] > (max_2*args.cutoff)):
             plant.append(i)
     pcd_plant = o3d.geometry.PointCloud()
     pcd_plant.points = o3d.utility.Vector3dVector(plant)
 
     # Writes out just the plants for downstream analysis
-    out_path = os.path.join(ars.outdir, args.filename + '.ply')
+    out_path = os.path.join(args.outdir, args.filename + '.ply')
     o3d.io.write_point_cloud(out_path, pcd_plant)
 
 
