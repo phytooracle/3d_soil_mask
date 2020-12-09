@@ -13,7 +13,6 @@ RUN apt-get install -y python3.6-dev \
                        software-properties-common \
                        apt-utils \
        
-RUN apt-get update
 RUN pip3 install -r requirements.txt
 RUN ldconfig
 
