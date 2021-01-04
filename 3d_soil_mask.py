@@ -134,13 +134,15 @@ def main():
 
     max_label = labels.max()
     print(f"point cloud has {max_label + 1} clusters")
+    
+    mode_label = stats.mode(labels)
 
     l0 = []
 
     # Separating out the labels
     for index, row in enumerate(ar_slice):
         lab = labels[index]
-        if lab == 0:
+        if lab == mode_label:
             l0.append(row)
 
     #---------------------------------
