@@ -15,7 +15,7 @@ RUN apt-get install -y python3.6-dev \
                        software-properties-common \
                        apt-utils \
        
-RUN pip3 install requirements.txt
+RUN pip3 install requirements.txt -y
 RUN ldconfig
 
 ENTRYPOINT [ "/usr/bin/python3", "/opt/3d_soil_mask.py" ]
